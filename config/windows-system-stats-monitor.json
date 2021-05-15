@@ -34,9 +34,9 @@
     }
   },
   "disk": {
-    "includeAllAttachedBlk": true,
-    "includeRootBlk": true,
-    "lsblkTimeout": "5s",
+    "includeAllAttachedBlk": false,
+    "includeRootBlk": false,
+    "lsblkTimeout": "60s",
     "metricsConfigs": {
       "disk/avg_queue_len": {
         "displayName": "disk/avg_queue_len"
@@ -88,14 +88,6 @@
       },
       "memory/unevictable_used": {
         "displayName": "memory/unevictable_used"
-      }
-    }
-  },
-  "osFeature": {
-    "KnownModulesConfigPath": "guestosconfig/known-modules.json",
-    "metricsConfigs": {
-      "system/os_feature": {
-        "displayName": "system/os_feature"
       }
     }
   }

@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors All rights reserved.
+Copyright 2020 The Kubernetes Authors All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,16 +16,10 @@ limitations under the License.
 
 package systemstatsmonitor
 
-import (
-	"testing"
+func (cc *cpuCollector) recordLoad() {
+	// not supported
+}
 
-	"github.com/stretchr/testify/assert"
-
-	"k8s.io/node-problem-detector/pkg/problemdaemon"
-)
-
-func TestRegistration(t *testing.T) {
-	assert.NotPanics(t,
-		func() { problemdaemon.GetProblemDaemonHandlerOrDie(SystemStatsMonitorName) },
-		"System stats monitor failed to register itself as a problem daemon.")
+func (cc *cpuCollector) recordSystemStats() {
+	// not supported
 }

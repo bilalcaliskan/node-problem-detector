@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors All rights reserved.
+Copyright 2021 The Kubernetes Authors All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,13 +19,10 @@ package systemstatsmonitor
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
-	"k8s.io/node-problem-detector/pkg/problemdaemon"
+	ssmtypes "k8s.io/node-problem-detector/pkg/systemstatsmonitor/types"
 )
 
-func TestRegistration(t *testing.T) {
-	assert.NotPanics(t,
-		func() { problemdaemon.GetProblemDaemonHandlerOrDie(SystemStatsMonitorName) },
-		"System stats monitor failed to register itself as a problem daemon.")
+func TestDiskCollector(t *testing.T) {
+	dc := NewDiskCollectorOrDie(&ssmtypes.DiskStatsConfig{})
+	dc.collect()
 }

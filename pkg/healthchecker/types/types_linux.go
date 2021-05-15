@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors All rights reserved.
+Copyright 2021 The Kubernetes Authors All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,18 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package systemstatsmonitor
+package types
 
-import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-
-	"k8s.io/node-problem-detector/pkg/problemdaemon"
+const (
+	DefaultCriCtl        = "/usr/bin/crictl"
+	DefaultCriSocketPath = "unix:///var/run/containerd/containerd.sock"
+	UptimeTimeLayout     = "Mon 2006-01-02 15:04:05 MST"
 )
-
-func TestRegistration(t *testing.T) {
-	assert.NotPanics(t,
-		func() { problemdaemon.GetProblemDaemonHandlerOrDie(SystemStatsMonitorName) },
-		"System stats monitor failed to register itself as a problem daemon.")
-}

@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors All rights reserved.
+Copyright 2020 The Kubernetes Authors All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,15 +17,24 @@ limitations under the License.
 package systemstatsmonitor
 
 import (
-	"testing"
+	"github.com/golang/glog"
 
-	"github.com/stretchr/testify/assert"
-
-	"k8s.io/node-problem-detector/pkg/problemdaemon"
+	"github.com/shirou/gopsutil/mem"
 )
 
-func TestRegistration(t *testing.T) {
-	assert.NotPanics(t,
-		func() { problemdaemon.GetProblemDaemonHandlerOrDie(SystemStatsMonitorName) },
-		"System stats monitor failed to register itself as a problem daemon.")
+func (mc *memoryCollector) collect() {
+	if mc == nil {
+		return
+	}
+
+	meminfo, err := mem.VirtualMemory()
+	if err != nil {
+		glog.Errorf("cannot get windows memory metrics from GlobalMemoryStatusEx: %v", err)
+		return
+	}
+
+	if mc.mBytesUsed != nil {
+		mc.mBytesUsed.Record(map[string]string{stateLabel: "free"}, int64(meminfo.Available)*1024)
+		mc.mBytesUsed.Record(map[string]string{stateLabel: "used"}, int64(meminfo.Used)*1024)
+	}
 }

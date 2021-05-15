@@ -1,5 +1,3 @@
-// +build !disable_system_log_monitor
-
 /*
 Copyright 2021 The Kubernetes Authors All rights reserved.
 
@@ -16,43 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package systemstatsmonitor
 
 import (
 	"testing"
 
-	"golang.org/x/sys/windows/svc"
+	ssmtypes "k8s.io/node-problem-detector/pkg/systemstatsmonitor/types"
 )
 
-func TestWindowsServiceLoop(t *testing.T) {
-	npdo, cleanup := setupNPD(t)
-	defer cleanup()
-
-	setupLogging(false)
-
-	s := &npdService{
-		options: npdo,
+func TestHostCollector(t *testing.T) {
+	hc := NewHostCollectorOrDie(&ssmtypes.HostStatsConfig{})
+	hc.collect()
+	val, ok := hc.tags["os_version"]
+	if !ok {
+		t.Errorf("tags[os_version] should exist.")
+	} else if val == "" {
+		t.Errorf("tags[os_version] should not be empty")
 	}
 
-	r := make(chan svc.ChangeRequest, 2)
-	changes := make(chan svc.Status, 4)
-	defer func() {
-		close(r)
-		close(changes)
-	}()
-
-	r <- svc.ChangeRequest{
-		Cmd: svc.Shutdown,
-	}
-	r <- svc.ChangeRequest{
-		Cmd: svc.Shutdown,
-	}
-
-	ssec, errno := s.Execute([]string{}, r, changes)
-	if ssec != false {
-		t.Error("ssec should be false")
-	}
-	if errno != 0 {
-		t.Error("errno should be 0")
+	val, ok = hc.tags["kernel_version"]
+	if !ok {
+		t.Errorf("tags[kernel_version] should exist.")
+	} else if val == "" {
+		t.Errorf("tags[kernel_version] should not be empty")
 	}
 }

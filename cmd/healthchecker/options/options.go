@@ -19,6 +19,7 @@ package options
 import (
 	"flag"
 	"fmt"
+	"runtime"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -34,7 +35,7 @@ func NewHealthCheckerOptions() *HealthCheckerOptions {
 // HealthCheckerOptions are the options used to configure the health checker.
 type HealthCheckerOptions struct {
 	Component          string
-	SystemdService     string
+	Service            string
 	EnableRepair       bool
 	CriCtlPath         string
 	CriSocketPath      string
@@ -46,9 +47,15 @@ type HealthCheckerOptions struct {
 // AddFlags adds health checker command line options to pflag.
 func (hco *HealthCheckerOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&hco.Component, "component", types.KubeletComponent,
-		"The component to check health for. Supports kubelet, docker and cri")
-	fs.StringVar(&hco.SystemdService, "systemd-service", "",
-		"The underlying systemd service responsible for the component. Set to the corresponding component for docker and kubelet, containerd for cri.")
+		"The component to check health for. Supports kubelet, docker, kube-proxy, and cri")
+	// Deprecated: For backward compatibility on linux environment. Going forward "service" will be used instead of systemd-service
+	if runtime.GOOS == "linux" {
+		fs.MarkDeprecated("systemd-service", "please use --service flag instead")
+		fs.StringVar(&hco.Service, "systemd-service", "",
+			"The underlying service responsible for the component. Set to the corresponding component for docker and kubelet, containerd for cri.")
+	}
+	fs.StringVar(&hco.Service, "service", "",
+		"The underlying service responsible for the component. Set to the corresponding component for docker and kubelet, containerd for cri.")
 	fs.BoolVar(&hco.EnableRepair, "enable-repair", true, "Flag to enable/disable repair attempt for the component.")
 	fs.StringVar(&hco.CriCtlPath, "crictl-path", types.DefaultCriCtl,
 		"The path to the crictl binary. This is used to check health of cri component.")
@@ -66,12 +73,13 @@ func (hco *HealthCheckerOptions) AddFlags(fs *pflag.FlagSet) {
 // Returns error if invalid, nil otherwise.
 func (hco *HealthCheckerOptions) IsValid() error {
 	// Make sure the component specified is valid.
-	if hco.Component != types.KubeletComponent && hco.Component != types.DockerComponent && hco.Component != types.CRIComponent {
-		return fmt.Errorf("the component specified is not supported. Supported components are : <kubelet/docker/cri>")
+	if hco.Component != types.KubeletComponent && hco.Component != types.DockerComponent &&
+		hco.Component != types.CRIComponent && hco.Component != types.KubeProxyComponent {
+		return fmt.Errorf("the component specified is not supported. Supported components are : <kubelet/docker/cri/kube-proxy>")
 	}
-	// Make sure the systemd service is specified if repair is enabled.
-	if hco.EnableRepair && hco.SystemdService == "" {
-		return fmt.Errorf("systemd-service cannot be empty when repair is enabled")
+	// Make sure the service is specified if repair is enabled.
+	if hco.EnableRepair && hco.Service == "" {
+		return fmt.Errorf("service cannot be empty when repair is enabled")
 	}
 	// Skip checking further if the component is not cri.
 	if hco.Component != types.CRIComponent {
@@ -90,14 +98,14 @@ func (hco *HealthCheckerOptions) IsValid() error {
 
 // SetDefaults sets the defaults values for the dependent flags.
 func (hco *HealthCheckerOptions) SetDefaults() {
-	if hco.SystemdService != "" {
+	if hco.Service != "" {
 		return
 	}
 	if hco.Component != types.CRIComponent {
-		hco.SystemdService = hco.Component
+		hco.Service = hco.Component
 		return
 	}
-	hco.SystemdService = types.ContainerdService
+	hco.Service = types.ContainerdService
 }
 
 func init() {

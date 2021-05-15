@@ -19,13 +19,10 @@ package systemstatsmonitor
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
-	"k8s.io/node-problem-detector/pkg/problemdaemon"
+	ssmtypes "k8s.io/node-problem-detector/pkg/systemstatsmonitor/types"
 )
 
-func TestRegistration(t *testing.T) {
-	assert.NotPanics(t,
-		func() { problemdaemon.GetProblemDaemonHandlerOrDie(SystemStatsMonitorName) },
-		"System stats monitor failed to register itself as a problem daemon.")
+func TestMemoryCollector(t *testing.T) {
+	mc := NewMemoryCollectorOrDie(&ssmtypes.MemoryStatsConfig{})
+	mc.collect()
 }
