@@ -6,3 +6,5 @@ pr.env
 junit*.xml
 debug.test
 /output/
+
+.idea/

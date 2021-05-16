@@ -156,6 +156,15 @@ func (c *conditionManager) sync() {
 	conditions := []v1.NodeCondition{}
 	for i := range c.conditions {
 		conditions = append(conditions, problemutil.ConvertToAPICondition(c.conditions[i]))
+
+		if c.conditions[i].TaintEnabled && c.conditions[i].Status == "True" {
+			if err := c.client.TaintNode(c.conditions[i].Taint); err != nil {
+				glog.Errorf("failed to taint node: %v", err)
+				return
+			}
+		} else if c.conditions[i].TaintEnabled && c.conditions[i].Status == "False" {
+
+		}
 	}
 	if err := c.client.SetConditions(conditions); err != nil {
 		// The conditions will be updated again in future sync

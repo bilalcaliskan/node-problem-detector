@@ -19,19 +19,19 @@ package problemclient
 import (
 	"encoding/json"
 	"fmt"
-	"net/url"
-	"os"
-	"path/filepath"
-
-	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/kubernetes/pkg/api/legacyscheme"
-
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/clock"
 	clientset "k8s.io/client-go/kubernetes"
+	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/kubernetes/pkg/api/legacyscheme"
+	"log"
+	"net/url"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/golang/glog"
 	"k8s.io/heapster/common/kubernetes"
@@ -50,7 +50,49 @@ type Client interface {
 	// GetNode returns the Node object of the node on which the
 	// node-problem-detector runs.
 	GetNode() (*v1.Node, error)
+
+	TaintNode(taintString string) error
+	// UntaintNode() error
 }
+
+func (c *nodeProblemClient) TaintNode(taintString string) error {
+	splittedSlice := strings.Split(taintString, "=")
+	key := splittedSlice[0]
+	rest := strings.Split(splittedSlice[1], ":")
+	value := rest[0]
+	effect := rest[1]
+	node, err := c.client.Nodes().Get(c.nodeName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	taints := node.Spec.Taints
+	for _, v := range taints {
+		if v.Key == key && v.Value == value && v.Effect == v1.TaintEffect(effect) {
+			log.Printf("taint %v already exists on %v, skipping...\n", taintString, node.Name)
+			return nil
+		}
+	}
+
+	taint := v1.Taint{
+		Key:       key,
+		Value:     value,
+		Effect:    v1.TaintEffect(effect),
+		TimeAdded: nil,
+	}
+
+	taints = append(taints, taint)
+	return nil
+}
+
+/*func (c *nodeProblemClient) UntaintNode() error {
+	node, err := c.client.Nodes().Get(c.nodeName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+
+}*/
 
 type nodeProblemClient struct {
 	nodeName       string

@@ -1,7 +1,7 @@
 {
 	"plugin": "kmsg",
 	"logPath": "/dev/kmsg",
-	"lookback": "5m",
+	"lookback": "1m",
 	"bufferSize": 10,
 	"source": "kernel-monitor",
 	"metricsReporting": true,
@@ -79,7 +79,9 @@
 			"type": "permanent",
 			"condition": "ReadonlyFilesystem",
 			"reason": "FilesystemIsReadOnly",
-			"pattern": "Remounting filesystem read-only"
+			"pattern": "Remounting filesystem read-only",
+			"taintEnabled": true,
+			"taint": "ReadonlyFilesystem=:NoSchedule"
 		}
 	]
 }

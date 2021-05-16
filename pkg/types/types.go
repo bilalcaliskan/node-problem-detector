@@ -65,6 +65,9 @@ type Condition struct {
 	Reason string `json:"reason"`
 	// Message is a human readable message of why node goes into this condition.
 	Message string `json:"message"`
+
+	TaintEnabled bool `json:"taintEnabled"`
+	Taint string `json:"taint"`
 }
 
 // Event is the event used internally by node problem detector.
