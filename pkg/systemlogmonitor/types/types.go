@@ -42,4 +42,8 @@ type Rule struct {
 	// Pattern is the regular expression to match the problem in log.
 	// Notice that the pattern must match to the end of the line.
 	Pattern string `json:"pattern"`
+	// TaintEnabled is a boolean flag to taint node on specific node problems
+	TaintEnabled bool `json:"taintEnabled"`
+	// Taint is a taint string about how to taint node when taintEnabled is true and relevant problem occured
+	Taint string `json:"taint"`
 }

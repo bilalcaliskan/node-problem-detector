@@ -72,6 +72,22 @@ func (f *FakeProblemClient) SetConditions(conditions []v1.NodeCondition) error {
 	return nil
 }
 
+// TaintNode taints the node if tainting is enabled and problem occurred
+func (f *FakeProblemClient) TaintNode(taintString string) error {
+	// TODO(bilalcaliskan): Unit testing
+	f.Lock()
+	defer f.Unlock()
+	return nil
+}
+
+// UntaintNode removes taint from node if tainting is enabled and problem resolved
+func (f *FakeProblemClient) UntaintNode(taintString string) error {
+	// TODO(bilalcaliskan): Unit testing
+	f.Lock()
+	defer f.Unlock()
+	return nil
+}
+
 // GetConditions is a fake mimic of GetConditions, it returns the conditions cached internally.
 func (f *FakeProblemClient) GetConditions(types []v1.NodeConditionType) ([]*v1.NodeCondition, error) {
 	f.Lock()

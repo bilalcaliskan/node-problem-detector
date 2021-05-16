@@ -81,7 +81,7 @@
 			"reason": "FilesystemIsReadOnly",
 			"pattern": "Remounting filesystem read-only",
 			"taintEnabled": true,
-			"taint": "ReadonlyFilesystem=:NoSchedule"
+			"taint": "node-problem-detector=ReadonlyFilesystem:NoSchedule"
 		}
 	]
 }

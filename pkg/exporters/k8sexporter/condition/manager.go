@@ -157,15 +157,19 @@ func (c *conditionManager) sync() {
 	for i := range c.conditions {
 		conditions = append(conditions, problemutil.ConvertToAPICondition(c.conditions[i]))
 
-		if c.conditions[i].TaintEnabled && c.conditions[i].Status == "True" {
+		if c.conditions[i].TaintEnabled && c.conditions[i].Status == types.True {
 			if err := c.client.TaintNode(c.conditions[i].Taint); err != nil {
-				glog.Errorf("failed to taint node: %v", err)
+				glog.Errorf("failed to add taint %v to node: %v", c.conditions[i].Taint, err)
 				return
 			}
-		} else if c.conditions[i].TaintEnabled && c.conditions[i].Status == "False" {
-
+		} else if c.conditions[i].TaintEnabled && c.conditions[i].Status == types.False {
+			if err := c.client.UntaintNode(c.conditions[i].Taint); err != nil {
+				glog.Errorf("failed to remove taint %v from node: %v", c.conditions[i].Taint, err)
+				return
+			}
 		}
 	}
+
 	if err := c.client.SetConditions(conditions); err != nil {
 		// The conditions will be updated again in future sync
 		glog.Errorf("failed to update node conditions: %v", err)

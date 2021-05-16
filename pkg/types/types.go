@@ -65,8 +65,9 @@ type Condition struct {
 	Reason string `json:"reason"`
 	// Message is a human readable message of why node goes into this condition.
 	Message string `json:"message"`
-
+	// TaintEnabled is a boolean flag to taint node on specific node problems
 	TaintEnabled bool `json:"taintEnabled"`
+	// Taint is a taint string about how to taint node when taintEnabled is true and relevant problem occured
 	Taint string `json:"taint"`
 }
 

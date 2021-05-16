@@ -194,11 +194,15 @@ func (l *logMonitor) generateStatus(logs []*logtypes.Log, rule systemlogtypes.Ru
 						types.True,
 						rule.Reason,
 						timestamp,
-					))
+				))
 				}
 				condition.Status = types.True
 				condition.Reason = rule.Reason
+				condition.TaintEnabled = rule.TaintEnabled
+				condition.Taint = rule.Taint
 				changedConditions = append(changedConditions, condition)
+				glog.Infof("condition = %v\n", condition)
+				glog.Infof("rule = %v\n", rule)
 				break
 			}
 		}

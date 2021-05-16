@@ -19,6 +19,7 @@ package problemclient
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/golang/glog"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -26,17 +27,14 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/heapster/common/kubernetes"
 	"k8s.io/kubernetes/pkg/api/legacyscheme"
-	"log"
+	"k8s.io/node-problem-detector/cmd/options"
+	"k8s.io/node-problem-detector/pkg/version"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/golang/glog"
-	"k8s.io/heapster/common/kubernetes"
-	"k8s.io/node-problem-detector/cmd/options"
-	"k8s.io/node-problem-detector/pkg/version"
 )
 
 // Client is the interface of problem client
@@ -52,47 +50,72 @@ type Client interface {
 	GetNode() (*v1.Node, error)
 
 	TaintNode(taintString string) error
-	// UntaintNode() error
+	UntaintNode(taintString string) error
 }
 
+// TaintNode taints the node if tainting is enabled and problem occurred
 func (c *nodeProblemClient) TaintNode(taintString string) error {
 	splittedSlice := strings.Split(taintString, "=")
 	key := splittedSlice[0]
-	rest := strings.Split(splittedSlice[1], ":")
-	value := rest[0]
-	effect := rest[1]
+	value := strings.Split(splittedSlice[1], ":")[0]
+	effect := strings.Split(splittedSlice[1], ":")[1]
 	node, err := c.client.Nodes().Get(c.nodeName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
-	taints := node.Spec.Taints
-	for _, v := range taints {
+	for _, v := range node.Spec.Taints {
 		if v.Key == key && v.Value == value && v.Effect == v1.TaintEffect(effect) {
-			log.Printf("taint %v already exists on %v, skipping...\n", taintString, node.Name)
+			glog.Infof("taint %v already exists on %v, skipping...\n", taintString, node.Name)
 			return nil
 		}
 	}
 
-	taint := v1.Taint{
+	node.Spec.Taints = append(node.Spec.Taints, v1.Taint{
 		Key:       key,
 		Value:     value,
 		Effect:    v1.TaintEffect(effect),
+		// TODO(bilalcaliskan): add proper TimeAdded
 		TimeAdded: nil,
+	})
+
+	_, err = c.client.Nodes().Update(node)
+	if err != nil {
+		return err
 	}
 
-	taints = append(taints, taint)
 	return nil
 }
 
-/*func (c *nodeProblemClient) UntaintNode() error {
+// UntaintNode removes taint from node if tainting is enabled and problem resolved
+func (c *nodeProblemClient) UntaintNode(taintString string) error {
+	splittedSlice := strings.Split(taintString, "=")
+	key := splittedSlice[0]
+	value := strings.Split(splittedSlice[1], ":")[0]
+	effect := strings.Split(splittedSlice[1], ":")[1]
 	node, err := c.client.Nodes().Get(c.nodeName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
+	var taints []v1.Taint
+	for _, v := range node.Spec.Taints {
+		if v.Key == key && v.Value == value && v.Effect == v1.TaintEffect(effect) {
+			glog.Infof("deleting taint %v!\n", v)
+			continue
+		}
+		glog.Infof("adding taint %v!\n", v)
+		taints = append(taints, v)
+	}
 
-}*/
+	node.Spec.Taints = taints
+	_, err = c.client.Nodes().Update(node)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 type nodeProblemClient struct {
 	nodeName       string
