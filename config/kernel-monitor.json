@@ -14,7 +14,9 @@
 		{
 			"type": "ReadonlyFilesystem",
 			"reason": "FilesystemIsNotReadOnly",
-			"message": "Filesystem is not read-only"
+			"message": "Filesystem is not read-only",
+			"taintEnabled": true,
+			"taint": "node-problem-detector=ReadonlyFilesystem:NoSchedule"
 		}
 	],
 	"rules": [

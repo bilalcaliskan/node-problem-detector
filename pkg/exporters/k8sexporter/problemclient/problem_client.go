@@ -66,7 +66,6 @@ func (c *nodeProblemClient) TaintNode(taintString string) error {
 
 	for _, v := range node.Spec.Taints {
 		if v.Key == key && v.Value == value && v.Effect == v1.TaintEffect(effect) {
-			glog.Infof("taint %v already exists on %v, skipping...\n", taintString, node.Name)
 			return nil
 		}
 	}
@@ -75,8 +74,6 @@ func (c *nodeProblemClient) TaintNode(taintString string) error {
 		Key:       key,
 		Value:     value,
 		Effect:    v1.TaintEffect(effect),
-		// TODO(bilalcaliskan): add proper TimeAdded
-		TimeAdded: nil,
 	})
 
 	_, err = c.client.Nodes().Update(node)
@@ -101,10 +98,9 @@ func (c *nodeProblemClient) UntaintNode(taintString string) error {
 	var taints []v1.Taint
 	for _, v := range node.Spec.Taints {
 		if v.Key == key && v.Value == value && v.Effect == v1.TaintEffect(effect) {
-			glog.Infof("deleting taint %v!\n", v)
 			continue
 		}
-		glog.Infof("adding taint %v!\n", v)
+
 		taints = append(taints, v)
 	}
 

@@ -157,6 +157,7 @@ func (c *conditionManager) sync() {
 	for i := range c.conditions {
 		conditions = append(conditions, problemutil.ConvertToAPICondition(c.conditions[i]))
 
+		glog.Infof("condition = %v\n", c.conditions[i])
 		if c.conditions[i].TaintEnabled && c.conditions[i].Status == types.True {
 			if err := c.client.TaintNode(c.conditions[i].Taint); err != nil {
 				glog.Errorf("failed to add taint %v to node: %v", c.conditions[i].Taint, err)
