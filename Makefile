@@ -61,7 +61,7 @@ IMAGE:=$(REGISTRY)/node-problem-detector:$(TAG)
 
 # ENABLE_JOURNALD enables build journald support or not. Building journald
 # support needs libsystemd-dev or libsystemd-journal-dev.
-ENABLE_JOURNALD?=0
+ENABLE_JOURNALD?=1
 
 ifeq ($(go env GOHOSTOS), darwin)
 ENABLE_JOURNALD=0
