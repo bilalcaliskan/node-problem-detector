@@ -1,7 +1,7 @@
 {
 	"plugin": "kmsg",
 	"logPath": "/dev/kmsg",
-	"lookback": "1m",
+	"lookback": "5m",
 	"bufferSize": 10,
 	"source": "kernel-monitor",
 	"metricsReporting": true,
