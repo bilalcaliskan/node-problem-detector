@@ -30,11 +30,11 @@ import (
 	"k8s.io/heapster/common/kubernetes"
 	"k8s.io/kubernetes/pkg/api/legacyscheme"
 	"k8s.io/node-problem-detector/cmd/options"
+	types2 "k8s.io/node-problem-detector/pkg/types"
 	"k8s.io/node-problem-detector/pkg/version"
 	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 // Client is the interface of problem client
@@ -48,32 +48,29 @@ type Client interface {
 	// GetNode returns the Node object of the node on which the
 	// node-problem-detector runs.
 	GetNode() (*v1.Node, error)
-
-	TaintNode(taintString string) error
-	UntaintNode(taintString string) error
+	// TaintNode taints the node if tainting is enabled on the config file on specific conditions
+	TaintNode(condition types2.Condition) error
+	// UntaintNode removes taint from node if tainting is enabled on the config file on specific conditions, and problem recovered
+	UntaintNode(condition types2.Condition) error
 }
 
 // TaintNode taints the node if tainting is enabled and problem occurred
-func (c *nodeProblemClient) TaintNode(taintString string) error {
-	splittedSlice := strings.Split(taintString, "=")
-	key := splittedSlice[0]
-	value := strings.Split(splittedSlice[1], ":")[0]
-	effect := strings.Split(splittedSlice[1], ":")[1]
+func (c *nodeProblemClient) TaintNode(condition types2.Condition) error {
 	node, err := c.client.Nodes().Get(c.nodeName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
 	for _, v := range node.Spec.Taints {
-		if v.Key == key && v.Value == value && v.Effect == v1.TaintEffect(effect) {
+		if v.Key == condition.TaintKey && v.Value == condition.TaintValue && v.Effect == v1.TaintEffect(condition.TaintEffect) {
 			return nil
 		}
 	}
 
 	node.Spec.Taints = append(node.Spec.Taints, v1.Taint{
-		Key:       key,
-		Value:     value,
-		Effect:    v1.TaintEffect(effect),
+		Key:       condition.TaintKey,
+		Value:     condition.TaintValue,
+		Effect:    v1.TaintEffect(condition.TaintEffect),
 	})
 
 	_, err = c.client.Nodes().Update(node)
@@ -84,12 +81,8 @@ func (c *nodeProblemClient) TaintNode(taintString string) error {
 	return nil
 }
 
-// UntaintNode removes taint from node if tainting is enabled and problem resolved
-func (c *nodeProblemClient) UntaintNode(taintString string) error {
-	splittedSlice := strings.Split(taintString, "=")
-	key := splittedSlice[0]
-	value := strings.Split(splittedSlice[1], ":")[0]
-	effect := strings.Split(splittedSlice[1], ":")[1]
+// UntaintNode removes taint from node if tainting is enabled on the config file on specific conditions, and problem recovered
+func (c *nodeProblemClient) UntaintNode(condition types2.Condition) error {
 	node, err := c.client.Nodes().Get(c.nodeName, metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -97,7 +90,7 @@ func (c *nodeProblemClient) UntaintNode(taintString string) error {
 
 	var taints []v1.Taint
 	for _, v := range node.Spec.Taints {
-		if v.Key == key && v.Value == value && v.Effect == v1.TaintEffect(effect) {
+		if v.Key == condition.TaintKey && v.Value == condition.TaintValue && v.Effect == v1.TaintEffect(condition.TaintEffect) {
 			continue
 		}
 

@@ -17,6 +17,7 @@ limitations under the License.
 package condition
 
 import (
+	"fmt"
 	"reflect"
 	"sync"
 	"time"
@@ -157,15 +158,20 @@ func (c *conditionManager) sync() {
 	for i := range c.conditions {
 		conditions = append(conditions, problemutil.ConvertToAPICondition(c.conditions[i]))
 
-		glog.Infof("condition = %v\n", c.conditions[i])
 		if c.conditions[i].TaintEnabled && c.conditions[i].Status == types.True {
-			if err := c.client.TaintNode(c.conditions[i].Taint); err != nil {
-				glog.Errorf("failed to add taint %v to node: %v", c.conditions[i].Taint, err)
+			taintString := fmt.Sprintf("%s=%s:%s", c.conditions[i].TaintKey, c.conditions[i].TaintValue,
+				c.conditions[i].TaintEffect)
+			glog.Infof("tainting is enabled and condition status is True, tainting with %s\n", taintString)
+			if err := c.client.TaintNode(c.conditions[i]); err != nil {
+				glog.Errorf("failed to add taint %v to node: %v", taintString, err)
 				return
 			}
 		} else if c.conditions[i].TaintEnabled && c.conditions[i].Status == types.False {
-			if err := c.client.UntaintNode(c.conditions[i].Taint); err != nil {
-				glog.Errorf("failed to remove taint %v from node: %v", c.conditions[i].Taint, err)
+			taintString := fmt.Sprintf("%s=%s:%s", c.conditions[i].TaintKey, c.conditions[i].TaintValue,
+				c.conditions[i].TaintEffect)
+			glog.Infof("tainting is enabled and condition status is False, removing taint %s\n", taintString)
+			if err := c.client.UntaintNode(c.conditions[i]); err != nil {
+				glog.Errorf("failed to remove taint %v from node: %v", taintString, err)
 				return
 			}
 		}

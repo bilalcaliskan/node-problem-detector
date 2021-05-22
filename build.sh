@@ -10,7 +10,5 @@ apk add --no-cache gcc libc-dev make git docker
 
 docker system prune -af
 make
-docker tag gcr.io/k8s-staging-npd/node-problem-detector:v0.8.6-74-g53f37a6-dirty bilalcaliskan/node-problem-detector:latest
+docker tag gcr.io/k8s-staging-npd/node-problem-detector:v0.8.6-76-g604b706-dirty bilalcaliskan/node-problem-detector:latest
 docker push bilalcaliskan/node-problem-detector:latest
-
-# TODO: consider changing the taint with node-problem-detector/ReadonlyFilesystem

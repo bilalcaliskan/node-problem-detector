@@ -44,6 +44,10 @@ type Rule struct {
 	Pattern string `json:"pattern"`
 	// TaintEnabled is a boolean flag to taint node on specific node problems
 	TaintEnabled bool `json:"taintEnabled"`
-	// Taint is a taint string about how to taint node when taintEnabled is true and relevant problem occured
-	Taint string `json:"taint"`
+	// TaintKey is a key of taint when taintEnabled is true and relevant problem occured
+	TaintKey string `json:"taintKey"`
+	// TaintValue is a value of taint when taintEnabled is true and relevant problem occured
+	TaintValue string `json:"taintValue"`
+	// TaintEffect is a effect of taint when taintEnabled is true and relevant problem occured
+	TaintEffect string `json:"taintEffect"`
 }

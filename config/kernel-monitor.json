@@ -9,14 +9,20 @@
 		{
 			"type": "KernelDeadlock",
 			"reason": "KernelHasNoDeadlock",
-			"message": "kernel has no deadlock"
+			"message": "kernel has no deadlock",
+			"taintEnabled": false,
+			"taintKey": "node-problem-detector",
+			"taintValue": "KernelDeadlock",
+			"taintEffect": "NoSchedule"
 		},
 		{
 			"type": "ReadonlyFilesystem",
 			"reason": "FilesystemIsNotReadOnly",
 			"message": "Filesystem is not read-only",
 			"taintEnabled": true,
-			"taint": "node-problem-detector=ReadonlyFilesystem:NoSchedule"
+			"taintKey": "node-problem-detector",
+			"taintValue": "ReadonlyFilesystem",
+			"taintEffect": "NoSchedule"
 		}
 	],
 	"rules": [
@@ -69,13 +75,21 @@
 			"type": "permanent",
 			"condition": "KernelDeadlock",
 			"reason": "AUFSUmountHung",
-			"pattern": "task umount\\.aufs:\\w+ blocked for more than \\w+ seconds\\."
+			"pattern": "task umount\\.aufs:\\w+ blocked for more than \\w+ seconds\\.",
+			"taintEnabled": false,
+			"taintKey": "node-problem-detector",
+			"taintValue": "KernelDeadlock",
+			"taintEffect": "NoSchedule"
 		},
 		{
 			"type": "permanent",
 			"condition": "KernelDeadlock",
 			"reason": "DockerHung",
-			"pattern": "task docker:\\w+ blocked for more than \\w+ seconds\\."
+			"pattern": "task docker:\\w+ blocked for more than \\w+ seconds\\.",
+			"taintEnabled": false,
+			"taintKey": "node-problem-detector",
+			"taintValue": "KernelDeadlock",
+			"taintEffect": "NoSchedule"
 		},
 		{
 			"type": "permanent",
@@ -83,7 +97,9 @@
 			"reason": "FilesystemIsReadOnly",
 			"pattern": "Remounting filesystem read-only",
 			"taintEnabled": true,
-			"taint": "node-problem-detector=ReadonlyFilesystem:NoSchedule"
+			"taintKey": "node-problem-detector",
+			"taintValue": "ReadonlyFilesystem",
+			"taintEffect": "NoSchedule"
 		}
 	]
 }
